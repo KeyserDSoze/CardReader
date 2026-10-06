@@ -89,7 +89,7 @@ fun ScannerScreen(onScanned: (String, CodeFormat) -> Unit, onClose: () -> Unit) 
     }
 }
 
-@ExperimentalGetImage
+@androidx.annotation.OptIn(markerClass = [ExperimentalGetImage::class])
 @Composable
 private fun CameraPreview(onScanned: (String, CodeFormat) -> Unit) {
     val context = LocalContext.current
