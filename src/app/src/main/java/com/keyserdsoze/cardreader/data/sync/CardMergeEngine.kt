@@ -54,8 +54,8 @@ object CardMergeEngine {
     private val versionComparator = Comparator<Versioned> { left, right ->
         compareValues(left.timestamp, right.timestamp)
             .takeIf { it != 0 }
-            ?: compareValues(left.writerId, right.writerId).takeIf { it != 0 }
             ?: compareValues(left.deleteRank, right.deleteRank).takeIf { it != 0 }
+            ?: compareValues(left.writerId, right.writerId).takeIf { it != 0 }
             ?: compareValues(left.stableValue, right.stableValue)
     }
 }

@@ -43,7 +43,9 @@ class DriveTransport(private val tokenProvider: DriveAccessTokenProvider) {
             .put("mimeType", JSON_MIME)
             .put("parents", JSONArray().put("appDataFolder"))
             .put("appProperties", JSONObject(properties))
-        decodeFile(upload("POST", UPLOAD_URL, metadata, bytes))
+        // Drive files.create has no idempotency key: never replay a request whose response may have been lost.
+        // A later sync re-lists the stable CardReader marker and can adopt a committed file safely.
+        decodeFile(upload("POST", UPLOAD_URL, metadata, bytes, safeToRetry = false))
     }
 
     suspend fun update(fileId: String, name: String, properties: Map<String, String>, bytes: ByteArray): DriveFile = withContext(Dispatchers.IO) {
@@ -51,10 +53,16 @@ class DriveTransport(private val tokenProvider: DriveAccessTokenProvider) {
             .put("name", name)
             .put("mimeType", JSON_MIME)
             .put("appProperties", JSONObject(properties))
-        decodeFile(upload("PATCH", "$UPLOAD_URL/${path(fileId)}", metadata, bytes))
+        decodeFile(upload("PATCH", "$UPLOAD_URL/${path(fileId)}", metadata, bytes, safeToRetry = true))
     }
 
-    private suspend fun upload(method: String, baseUrl: String, metadata: JSONObject, bytes: ByteArray): JSONObject {
+    private suspend fun upload(
+        method: String,
+        baseUrl: String,
+        metadata: JSONObject,
+        bytes: ByteArray,
+        safeToRetry: Boolean,
+    ): JSONObject {
         val boundary = "cardreader_${UUID.randomUUID()}"
         val output = ByteArrayOutputStream().apply {
             write("--$boundary\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n".toByteArray())
@@ -64,10 +72,18 @@ class DriveTransport(private val tokenProvider: DriveAccessTokenProvider) {
             write("\r\n--$boundary--\r\n".toByteArray())
         }.toByteArray()
         val url = "$baseUrl?uploadType=multipart&fields=id,name,modifiedTime,appProperties"
-        return JSONObject(execute(method, url, output, "multipart/related; boundary=$boundary").toString(Charsets.UTF_8))
+        return JSONObject(
+            execute(method, url, output, "multipart/related; boundary=$boundary", safeToRetry).toString(Charsets.UTF_8),
+        )
     }
 
-    private suspend fun execute(method: String, url: String, body: ByteArray? = null, contentType: String? = null): ByteArray {
+    private suspend fun execute(
+        method: String,
+        url: String,
+        body: ByteArray? = null,
+        contentType: String? = null,
+        safeToRetry: Boolean = true,
+    ): ByteArray {
         var lastError: Exception? = null
         repeat(4) { attempt ->
             try {
@@ -92,13 +108,16 @@ class DriveTransport(private val tokenProvider: DriveAccessTokenProvider) {
                     if (status in 200..299) return response
                     if (status == 401 || status == 403) throw DriveAuthorizationException("Google Drive authorization failed (HTTP $status)")
                     if (status !in 429..429 && status !in 500..504) throw DriveTransportException("Google Drive request failed (HTTP $status)")
-                    lastError = DriveTransportException("Temporary Google Drive failure (HTTP $status)")
+                    val transient = DriveTransportException("Temporary Google Drive failure (HTTP $status)")
+                    if (!safeToRetry) throw transient
+                    lastError = transient
                 } finally {
                     connection.disconnect()
                 }
             } catch (error: DriveAuthorizationException) {
                 throw error
             } catch (error: IOException) {
+                if (!safeToRetry) throw DriveTransportException("Google Drive create outcome is unknown", error)
                 lastError = error
             }
             if (attempt < 3) Thread.sleep((1L shl attempt) * 1_000L)

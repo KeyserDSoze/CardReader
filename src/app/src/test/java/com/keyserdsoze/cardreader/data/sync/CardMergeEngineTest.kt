@@ -26,6 +26,15 @@ class CardMergeEngineTest {
     }
 
     @Test
+    fun deleteWinsAnExactTimestampTie() {
+        val local = WalletDocument(cards = listOf(card("Edit", 20, "z")))
+        val remote = WalletDocument(tombstones = listOf(CardTombstone("id", 20, "a")))
+        val merged = CardMergeEngine.merge(local, remote)
+        assertTrue(merged.cards.isEmpty())
+        assertEquals("id", merged.tombstones.single().id)
+    }
+
+    @Test
     fun independentCardsAreUnioned() {
         val local = WalletDocument(cards = listOf(card("One", 10, "a", "1")))
         val remote = WalletDocument(cards = listOf(card("Two", 10, "b", "2")))
