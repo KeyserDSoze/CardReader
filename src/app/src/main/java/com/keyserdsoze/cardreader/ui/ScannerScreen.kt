@@ -37,10 +37,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import com.keyserdsoze.cardreader.model.CodeFormat
@@ -89,7 +89,7 @@ fun ScannerScreen(onScanned: (String, CodeFormat) -> Unit, onClose: () -> Unit) 
     }
 }
 
-@OptIn(ExperimentalGetImage::class)
+@ExperimentalGetImage
 @Composable
 private fun CameraPreview(onScanned: (String, CodeFormat) -> Unit) {
     val context = LocalContext.current
