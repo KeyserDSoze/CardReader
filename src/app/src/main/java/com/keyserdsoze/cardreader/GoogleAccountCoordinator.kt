@@ -37,7 +37,10 @@ class GoogleAccountCoordinator(private val activity: Activity) {
         val option = GetSignInWithGoogleOption.Builder(serverClientId).build()
         val request = GetCredentialRequest.Builder().addCredentialOption(option).build()
         return try {
-            val credential = credentialManager.getCredential(request, MutableContextWrapper(activity)).credential
+            val credential = credentialManager.getCredential(
+                request = request,
+                context = MutableContextWrapper(activity),
+            ).credential
             val custom = credential as? CustomCredential ?: return GoogleSignInResult.Failure("Unsupported credential")
             if (custom.type != GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                 return GoogleSignInResult.Failure("Unsupported Google credential")
