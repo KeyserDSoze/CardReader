@@ -60,6 +60,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -295,7 +296,7 @@ private fun SyncDialog(viewModel: WalletViewModel, onDismiss: () -> Unit) {
     val scope = rememberCoroutineScope()
     val account by viewModel.account.collectAsState()
     val state by viewModel.syncState.collectAsState()
-    val serverClientId = context.getString(R.string.google_web_client_id)
+    val serverClientId = stringResource(R.string.google_web_client_id)
     var pendingIdentity by remember { mutableStateOf<GoogleAccountIdentity?>(null) }
     val authorizationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result: ActivityResult ->
         val identity = pendingIdentity
