@@ -71,9 +71,18 @@ jobs:
           CARDREADER_KEYSTORE_PATH: ${{ runner.temp }}/cardreader-release.jks
           CARDREADER_KEYSTORE_PASSWORD: ${{ secrets.CARDREADER_KEYSTORE_PASSWORD }}
           CARDREADER_GOOGLE_WEB_CLIENT_ID: ${{ secrets.CARDREADER_GOOGLE_WEB_CLIENT_ID }}
+          CARDREADER_GOOGLE_ANDROID_CLIENT_ID: ${{ secrets.CARDREADER_GOOGLE_ANDROID_CLIENT_ID }}
         run: |
           if [[ -z "$CARDREADER_KEYSTORE_PASSWORD" ]]; then
             echo "Missing repository secret CARDREADER_KEYSTORE_PASSWORD" >&2
+            exit 1
+          fi
+          if [[ -z "$CARDREADER_GOOGLE_WEB_CLIENT_ID" ]]; then
+            echo "Missing repository secret CARDREADER_GOOGLE_WEB_CLIENT_ID" >&2
+            exit 1
+          fi
+          if [[ -z "$CARDREADER_GOOGLE_ANDROID_CLIENT_ID" ]]; then
+            echo "Missing repository secret CARDREADER_GOOGLE_ANDROID_CLIENT_ID" >&2
             exit 1
           fi
           gradle --no-daemon -PrequireStableSigning=true :app:testDebugUnitTest :app:assembleRelease :app:bundleRelease

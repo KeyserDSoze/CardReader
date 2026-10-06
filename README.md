@@ -40,7 +40,8 @@ Required repository secrets:
 
 - `CARDREADER_KEYSTORE_B64`
 - `CARDREADER_KEYSTORE_PASSWORD`
-- `CARDREADER_GOOGLE_WEB_CLIENT_ID` (needed to enable Google connection in release builds)
+- `CARDREADER_GOOGLE_WEB_CLIENT_ID`
+- `CARDREADER_GOOGLE_ANDROID_CLIENT_ID` (release-readiness check for the package/certificate OAuth registration)
 
 The release signing key itself is never committed. See `docs/SIGNING.md`.
 

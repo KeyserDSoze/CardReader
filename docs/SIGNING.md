@@ -14,7 +14,8 @@ Never replace this key after publishing `0.0.1`; Android updates must be signed 
 
 - `CARDREADER_KEYSTORE_B64`: Base64 of the complete JKS.
 - `CARDREADER_KEYSTORE_PASSWORD`: password for the JKS and `cardreader` entry.
-- `CARDREADER_GOOGLE_WEB_CLIENT_ID`: OAuth Web Client ID used by Credential Manager. It can remain empty only in builds where Google sync is intentionally unavailable.
+- `CARDREADER_GOOGLE_WEB_CLIENT_ID`: OAuth Web Client ID used by Credential Manager.
+- `CARDREADER_GOOGLE_ANDROID_CLIENT_ID`: OAuth Android Client ID for `com.keyserdsoze.cardreader` and the release SHA-1. It is checked by CI as a release prerequisite and is not embedded in the APK.
 
 The workflow restores the JKS only under the ephemeral runner temp directory and calls Gradle with `-PrequireStableSigning=true`. A release therefore fails rather than silently changing signing identity.
 
